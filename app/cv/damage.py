@@ -27,7 +27,7 @@ def _load_model() -> Optional[object]:
     except Exception:
         return None
 
-    weights = os.getenv("YOLO_MODEL_PATH", os.path.join(os.path.dirname(os.path.dirname(__file__)), "..", "models", "car_damage.pt"))
+    weights = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models", "car_damage.pt")
     weights = os.path.abspath(weights)
     if not os.path.exists(weights):
         return None
