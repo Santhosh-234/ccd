@@ -1,0 +1,27 @@
+# Render service manifest for Car Damage Detection & Valuation
+# Documentation: https://render.com/docs/deploy-manifest
+
+services:
+  - type: web
+    name: car-damage-detection
+    env: docker
+    # Use Dockerfile in repo root
+    dockerCommand: null
+    plan: free
+    autoDeploy: true
+    # Optional: expose internal port via Dockerfile; Render injects $PORT
+    envVars:
+      - key: YOLO_MODEL_PATH
+        # If you have a YOLO weights file, upload it or set a remote URL and set this path
+        value: ""
+      - key: SCRAPER_USER_AGENT
+        value: "Mozilla/5.0 (compatible; RenderBot/1.0; +https://render.com)"
+      - key: REQUEST_TIMEOUT_SECONDS
+        value: "15"
+    buildCommand: null
+    startCommand: null
+# Notes:
+# - Render will build the Dockerfile by default when 'env: docker' is set.
+# - The Dockerfile has been updated to respect the $PORT environment variable injected by Render.
+# - For large model weights (YOLO), you should host them in an external storage (S3) and provide a download step
+#   in a startup script, or bake them into a custom image.
