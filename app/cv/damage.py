@@ -23,18 +23,23 @@ def _load_model() -> Optional[object]:
     if _yolo_model is not None:
         return _yolo_model
     try:
-        from ultralytics import YOLO  # type: ignore
+        from ultralytics import YOLO
     except Exception:
+        print("Ultralytics YOLO not installed!")
         return None
 
     weights = os.path.join(os.path.dirname(os.path.dirname(__file__)), "models", "car_damage.pt")
     weights = os.path.abspath(weights)
     if not os.path.exists(weights):
+        print(f"YOLO model not found at {weights}")
         return None
+
     try:
         _yolo_model = YOLO(weights)
+        print("YOLO model loaded successfully")
         return _yolo_model
-    except Exception:
+    except Exception as e:
+        print(f"Failed to load YOLO model: {e}")
         return None
 
 
