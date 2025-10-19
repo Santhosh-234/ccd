@@ -36,8 +36,8 @@ templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 # ---------------------- Helper: Wrap DLResult ----------------------
 def parse_yolo_result(result):
-    """Convert Ultralytics DLResult (or list) into DamageResult object."""
-    # If the result is a list, take the first element
+    """Convert YOLO prediction result into DamageResult object."""
+    # Ensure we are working with a single result
     if isinstance(result, list):
         result = result[0]
 
@@ -46,22 +46,29 @@ def parse_yolo_result(result):
     damage_types = {"dents": 0, "scratches": 0, "cracks": 0}
     num_regions = 0
     total_damage_area = 0
-    severity = 0
+    severity = 0.0
 
-    if hasattr(result, "boxes") and result.boxes is not None and len(result.boxes) > 0:
-        num_regions = len(result.boxes.xyxy)
-        for cls in result.boxes.cls:
-            cls_name = result.names[int(cls)]
+    if hasattr(result, "boxes") and result.boxes is not None:
+        # result.boxes.xyxy may not exist if no detections
+        xyxy_list = getattr(result.boxes, "xyxy", [])
+        num_regions = len(xyxy_list)
+
+        # Count damage types
+        cls_list = getattr(result.boxes, "cls", [])
+        for cls_idx in cls_list:
+            cls_name = result.names[int(cls_idx)]
             if cls_name in damage_types:
                 damage_types[cls_name] += 1
 
-        for xyxy in result.boxes.xyxy:
+        # Calculate total damage area
+        for xyxy in xyxy_list:
             x1, y1, x2, y2 = xyxy
             total_damage_area += (x2 - x1) * (y2 - y1)
 
+        # Severity relative to image size
         if hasattr(result, "orig_img") and result.orig_img is not None:
             h, w = result.orig_img.shape[:2]
-            severity = total_damage_area / (h * w)
+            severity = total_damage_area / (h * w) if h*w>0 else 0.0
 
     return type("DamageResult", (), {
         "annotated_bgr": annotated_bgr,
@@ -70,7 +77,6 @@ def parse_yolo_result(result):
         "num_regions": num_regions,
         "total_damage_area": total_damage_area
     })()
-
 
 
 # ---------------------- Routes ----------------------
@@ -112,7 +118,7 @@ async def analyze(
 
         # Get original price
         from app.pricing.fetch import _get_original_price
-        original_price = _get_original_price(make, model, year)
+        original_price = _get_original_price(make, model, year) or 0
 
         # Filter and sort listings by price proximity
         filtered_listings = []
