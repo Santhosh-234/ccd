@@ -1,0 +1,11 @@
+names:
+- dent
+- scratch
+- crack
+- paint_damage
+- bumper_damage
+- glass_damage
+nc: 6
+path: D:\Personal\test\data\cardd\yolo_format
+train: images/train
+val: images/val
