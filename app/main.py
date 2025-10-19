@@ -7,7 +7,7 @@ from starlette.responses import RedirectResponse
 from typing import Optional
 import os
 
-from .cv.damage import detect_damage
+from .cv.damage import detect_with_yolo as detect_damage
 from .pricing.fetch import fetch_market_prices
 from .services.valuation import apply_damage_multiplier
 from .utils import ensure_dirs, save_image_bytes, bgr_image_to_png_bytes, generate_filename
