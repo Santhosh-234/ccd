@@ -646,7 +646,9 @@
             <div class="price-label">
               <i class="fas fa-tag"></i> Original Price ({{ year }})
             </div>
-            <div class="price">₹ {{ '{:,.0f}'.format(original_price) }}</div>
+            <div class="price">
+              ₹ {{ '{:,.0f}'.format(original_price or 0) }}
+            </div>
             <div style="font-size: 0.9rem; opacity: 0.8">
               Showroom price when new
             </div>

@@ -36,13 +36,13 @@ templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 # ---------------------- Helper: Wrap DLResult ----------------------
 def parse_yolo_result(result):
-    """
-    Converts Ultralytics DLResult into a DamageResult object with expected attributes
-    """
-    # Annotated image as NumPy array
+    """Convert Ultralytics DLResult (or list) into DamageResult object."""
+    # If the result is a list, take the first element
+    if isinstance(result, list):
+        result = result[0]
+
     annotated_bgr = result.plot() if hasattr(result, "plot") else None
 
-    # Count boxes and map class names to damage_types
     damage_types = {"dents": 0, "scratches": 0, "cracks": 0}
     num_regions = 0
     total_damage_area = 0
@@ -55,17 +55,14 @@ def parse_yolo_result(result):
             if cls_name in damage_types:
                 damage_types[cls_name] += 1
 
-        # Compute total damage area
         for xyxy in result.boxes.xyxy:
             x1, y1, x2, y2 = xyxy
             total_damage_area += (x2 - x1) * (y2 - y1)
 
-        # Severity = fraction of damaged pixels
         if hasattr(result, "orig_img") and result.orig_img is not None:
             h, w = result.orig_img.shape[:2]
             severity = total_damage_area / (h * w)
 
-    # Return a simple object with attributes
     return type("DamageResult", (), {
         "annotated_bgr": annotated_bgr,
         "damage_types": damage_types,
@@ -73,6 +70,7 @@ def parse_yolo_result(result):
         "num_regions": num_regions,
         "total_damage_area": total_damage_area
     })()
+
 
 
 # ---------------------- Routes ----------------------
